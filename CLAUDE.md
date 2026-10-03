@@ -14,13 +14,14 @@ engine = ฟังก์ชันบริสุทธิ์: CSV เข้า �
      เรียกผ่าน CLI ได้เมื่อต้องการ ดู `code-review-graph --help`;
      เอากลับมาเป็น MCP ตอนเริ่ม cloud-v0 -->
 
-## Memory: .fael/log/ (append-only, local only)
+## Memory — `fael` (append-only)
 
-The log is this project's memory across sessions. `.fael/log/` is gitignored — it
-stays on this machine and is not pushed.
+Rows live in the clone-shared journal (`.git/fael/`, `store = "local"`, the
+default): every worktree sees them at once, nothing to commit. This repo is
+public — never point `fael.remote` at origin (the rows would be published).
 
-Log as you work — do not wait to be asked. With the fael MCP server connected, call
-its add / find / close tools directly; otherwise the CLI:
+Log as you work — do not wait to be asked. Use the fael MCP tools when
+connected, otherwise the CLI:
 
     fael kickoff <plan.md>            # start a session with this
     fael add decision "what was locked, and why" --files src/x.py
@@ -29,17 +30,17 @@ its add / find / close tools directly; otherwise the CLI:
     fael close <id> "fixed in <sha>"
     fael find "<text>"
 
-What goes in — would someone cloning this repo tomorrow need it, and can they not
+What goes in — would someone picking this up tomorrow need it, and can they not
 find it anywhere else?
-- issue — something broken, even when found mid-task on something else: add it now,
-  not at the end. Once fixed, close it — only close closes a bug.
+- issue — something broken, even when found mid-task on something else: add it
+  now, not at the end. Once fixed, close it.
 - decision — something agreed or locked that git and the plan do not say, with why.
 - note — state the next session needs (where a chunk stopped, what is half-done).
 Before ending a turn that committed work: at least one row about it.
 
 Write each entry standalone — it is read months later with no chat to refer to.
 --files is required: rows that name no file cannot be recalled when that file is
-touched later (add refuses without it).
+touched later. Never type an id from memory — `fael find` it first.
 
 ## Executing a plan chunk-by-chunk
 
@@ -50,8 +51,8 @@ work done. Cut at chunk boundaries instead:
 Finish a chunk, before starting the next:
 1. Tick its checkbox + stamp the TL;DR in the plan file
 2. Commit — separate from other chunks
-3. `fael add note "what the next chunk needs" --files f1,f2,<path/to/PLAN-x.md>`
-   — use the same plan path every time
+3. `fael add note "what the next chunk needs" --files f1,f2,plan:<name> --key plan:<name>:handoff`
+   — one key per plan, so each chunk's note supersedes the last
 4. Stop. Do not continue to the next chunk in the same session unless told to.
 
 Next chunk, new session — open with `fael kickoff <path/to/PLAN-x.md>` instead
